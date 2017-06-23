@@ -1,0 +1,11 @@
+function user(name,age,addr){
+	user.name=name;
+	user.age=age;
+	user.addr=addr;
+	return to=function(){
+		//user.name+"---"+user.age+"---"+user.addr;
+		1	
+}
+
+	
+}
