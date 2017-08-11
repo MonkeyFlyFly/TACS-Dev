@@ -1,14 +1,35 @@
 $(function(){
 	disableCalculatedInput();
+	previousS3F3 = 0;
 	previousS5F3 = 0;
 	previousS7F3 = 0;
-	previousS3F3 = 0;
+	carriedForwardLoss_S3F37 = 0;
 	carriedForwardLoss_S5F37 = 0;
 	carriedForwardLoss_S7F37 = 0;
-	carriedForwardLoss_S3F37 = 0;
-	codeBus="";
+	resultMapSchedule8 = "";
+	s10f4 = "";
+	s10f6 = "";
+	codeBus_m="";
+	codeBus_s="";
 	taxpayerType="";
-	var versionUid = $("#Cret00BPTRetVerUid").val();
+	resultMap="";
+	minusThePrepaidTa="";
+	versionUid = $("#Cret00BPTRetVerUid").val();
+	tin = $("#creg01Tin").val();
+	taxyear = $("#cret02RetTaxyear").val();
+	taxperiod=$("#cret02RetTaxperiodSel option:selected").text();
+	taxPayerUid = $("#taxPayerUid").val();
+	taxTypeCode = $("#cret09TaxtypeCode").val();
+	$.ajax({
+		 type:'post',
+		 url:'getBPTCompanyPreviousFieldValue.do',
+		 data:{"cret03versionUid":versionUid,"fieldName":"Cret00BPTCTRBNS3F3"},
+		 dataType:'json',
+		 async: true,
+		 success:function(data){
+			 previousS3F3 = data.val;
+		 }
+	});
 		$.ajax({
 		 type:'post',
 		 url:'getBPTCompanyPreviousFieldValue.do',
@@ -28,32 +49,31 @@ $(function(){
 		 success:function(data){
 			 previousS7F3 = data.val;
 		 }
-	});
-		$.ajax({
+	});	
+		 $.ajax({
 		 type:'post',
-		 url:'getBPTCompanyPreviousFieldValue.do',
-		 data:{"cret03versionUid":versionUid,"fieldName":"Cret00BPTCTRBNS3F3"},
+		 url:'getBptLossFromRestore.do',
+		 data:{"tin":tin,"taxYear":taxYear,"taxTypeUid":taxTypeUid,"lossType":"Commercial"},
 		 dataType:'json',
 		 async: true,
 		 success:function(data){
-			 previousS3F3 = data.val;
+			 carriedForwardLoss_S3F37 = data.val;
 		 }
-	});
+	});	
 		$.ajax({
 		 type:'post',
-		 url:'getBPTloss.do',
-		 data:{"cret03versionUid":versionUid,"fieldName":"Cret00BPTCTRBNS5F3"},
+		 url:'getBptLossFromRestore.do',
+		 data:{"tin":tin,"taxYear":taxYear,"taxTypeUid":taxTypeUid,"lossType":"Industrial"},
 		 dataType:'json',
 		 async: true,
 		 success:function(data){
 			 carriedForwardLoss_S5F37 = data.val;
 		 }
 	});
-	//S7F37
 		 $.ajax({
 		 type:'post',
-		 url:'getBPTloss.do',
-		 data:{"cret03versionUid":versionUid,"fieldName":"Cret00BPTCTRBNS7F37"},
+		 url:'getBptLossFromRestore.do',
+		 data:{"tin":tin,"taxYear":taxYear,"taxTypeUid":taxTypeUid,"lossType":"Services"},
 		 dataType:'json',
 		 async: true,
 		 success:function(data){
@@ -62,34 +82,77 @@ $(function(){
 	});
 		 $.ajax({
 		 type:'post',
-		 url:'getBPTloss.do',
-		 data:{"cret03versionUid":versionUid,"fieldName":"Cret00BPTCTRBNS3F37"},
+		 url:'getBPTPreviousTabRowsValues.do',
+		 data:{
+			 "cret03versionUid":versionUid,"tabTag":"tbl_01","typeFeild":"Cret00BPTCTRBNS8F2_",
+			 "asstFeild":"Cret00BPTCTRBNS8F14_","dptnFeild":"Cret00BPTCTRBNS8F13_"
+			 },
 		 dataType:'json',
 		 async: true,
 		 success:function(data){
-			 carriedForwardLoss_S3F37 = data.val;
+			 resultMapSchedule8 = data.val;
 		 }
 	});
 		 $.ajax({
 		 type:'post',
-		 url:'getBPTloss.do',
-		 data:{"cret03versionUid":versionUid,"fieldName":"Cret00BPTCTRBNS3F37"},
+		 url:'getTaxpayerBus.do',
+		 data:{"taxPayerUid":taxPayerUid,"tin":tin,"type":"m"},
 		 dataType:'json',
 		 async: true,
 		 success:function(data){
-			 codeBus = data.val;
+			 codeBus_m = data.val;
 		 }
 	});
 		 $.ajax({
 		 type:'post',
-		 url:'getBPTloss.do',
-		 data:{"cret03versionUid":versionUid,"fieldName":"Cret00BPTCTRBNS3F37"},
+		 url:'getTaxpayerBus.do',
+		 data:{"taxPayerUid":taxPayerUid,"tin":tin,"type":"s"},
+		 dataType:'json',
+		 async: true,
+		 success:function(data){
+			 codeBus_s = data.val;
+		 }
+	});
+		 $.ajax({
+		 type:'post',
+		 url:'getBPTTaxPayerType.do',
+		 data:{"taxpayerUid":taxPayerUid},
 		 dataType:'json',
 		 async: true,
 		 success:function(data){
 			 taxpayerType = data.val;
 		 }
-	});	
+	});
+	$.ajax({
+		 type:'post',
+		 url:'getCalcTaxPable.do',
+		 data:{"taxType":"BPT","payType":"comm","verUid":versionUid,"income1":s10f3,"income2":s10f5},
+		 dataType:'json',
+		 async: true,
+		 success:function(data){
+			 s10f4 = data.val;
+		 }
+	});
+		$.ajax({
+		 type:'post',
+		 url:'getCalcTaxPable.do',
+		 data:{"taxType":"BPT","payType":"indu","verUid":versionUid,"income1":s10f3,"income2":s10f5},
+		 dataType:'json',
+		 async: true,
+		 success:function(data){
+			 s10f6 = data.val;
+		 }
+	});
+		 $.ajax({
+		 type:'post',
+		 url:'getMinusThePrepaidTax.do',
+		 data:{"taxPayerUid":taxPayerUid,"taxTypeCode":taxTypeCode,"taxYear":taxYear,"taxPeriod":taxPeriod},
+		 dataType:'json',
+		 async: true,
+		 success:function(data){
+			 minusThePrepaidTax = data.val;
+		 }
+	}); 
 });
 var calculateBN = (function(){
 	var options = {};
@@ -120,6 +183,13 @@ var calculateBN = (function(){
 		val = parseFloat(val).toFixed(2);
 		$("#"+options.prefix+id).val(val);
 		$("input[name='"+options.prefix+id+"']").val(val);
+	}
+	function setFixed(val){
+		if(val == 0){
+			return 0;
+		}else{
+			parseFloat(val).toFixed(2);
+		}
 	}
 	function schedule1(){
 		  setBNValue("S1F7",getValue("S1F1")+getValue("S1F3")+getValue("S1F5")+getValue("S1F69")+getValue("S1F71"));
@@ -162,24 +232,24 @@ var calculateBN = (function(){
 			smallV = 0;
 		}else {
 		var s3f4 = getValue("S3F4");
-		var m10_S2f23 = s2f23 * 0.1;
+		var m10_S2f23 = setFixed(s2f23 * 0.1);
 		if(s3f4 > m10_S2f23) {
 		  smallV = m10_S2f23;
 		}else {
 		  smallV = s3f4;
 		}
 		}
-		var m25_S3f3 = getValue("S3F3") * 0.25;
+		var m25_S3f3 = setFixed(getValue("S3F3") * 0.25);
 		var pvS3f3 = previousS3F3;
-		var p_m25_S3f3 = pvS3f3 * 0.25;
+		var p_m25_S3f3 = setFixed(pvS3f3 * 0.25);
 		setBNValue("S3F25",getValue("S3F2")+smallV+m25_S3f3+p_m25_S3f3);
 		setBNValue("S3F26",getMinValue(getValue("3F26"),getValue("S2F15")));
 		setBNValue("S3F28",getValue("S3F20")+getValue("S3F21")+getValue("S3F22")+getValue("S3F25")+getValue("S3F26")+getValue("S3F39"));
 		var s3f19 = getValue("S3F19");
 		var s3f37 = getValue("S3F19") - getValue("S3F28");  
 		if(s3f19 > 0 && s3f37 <= 0) {
-			var m25_s3f3 = getValue("S3F3") * 0.25;
-			var m50_s3f28 = getValue("S3F28") * 0.5;
+			var m25_s3f3 = setFixed(getValue("S3F3") * 0.25);
+			var m50_s3f28 = setFixed(getValue("S3F28") * 0.5);
 			if(m25_s3f3, m50_s3f28) {
 			  s3f37 = 0;
 			}
@@ -203,7 +273,11 @@ var calculateBN = (function(){
 		setBNValue("S4F18",(getValue("S4F15")+getValue("S4F16"))-getValue("S4F17"));
 		setBNValue("S4F22",(getValue("S4F18")+getValue("S4F19")+getValue("S4F20"))-getValue("S4F21"));
 		setBNValue("S4F23",getValue("S4F4")-getValue("S4F22"));
-		setBNValue("S4F24",(getValue("S4F23")*100)/getValue("S4F22"));
+		if(getValue("S4F22")!=0){
+			setBNValue("S4F24",setFixed((setFixed(getValue("S4F23")*100))/getValue("S4F22")));
+		}else{
+		setBNValue("S4F24",0);
+		}
 		setBNValue("S4F34",(getValue("S4F23")+getValue("S4F25")+getValue("S4F26")+getValue("S4F28"))-getValue("S4F29")-getValue("S4F30")-getValue("S4F31")-getValue("S4F32")-getValue("S4F33"));
 	}
 	function schedule5(){
@@ -219,16 +293,16 @@ var calculateBN = (function(){
 			smallV = 0;
 		  }else {
 			var S5f4 = getValue("S5F4");
-			var m10_S4f34 = getValue("S4F34")* 0.1;
+			var m10_S4f34 = setFixed(getValue("S4F34")* 0.1);
 			if(S5f4 > m10_S4f34) {
 			  smallV = m10_S4f34;
 			}else {
 			  smallV = S5f4;
 			}
 		  }
-		var m25_S5f3 = getValue("S5F3") * 0.25;	
+		var m25_S5f3 = setFixed(getValue("S5F3") * 0.25);	
 		var pvS5f3 = previousS5F3;
-		var p_m25_S5f3 = pvS5f3 * 0.25;		
+		var p_m25_S5f3 = setFixed(pvS5f3 * 0.25);		
 		setBNValue("S5F25",getValue("S5F2")+smallV+m25_S5f3+p_m25_S5f3);
 		//------------------------------S5F25--------end-----------------------------
 		setBNValue("S5F26",getMinValue(getValue("S5f26"),getValue("S4F26")));
@@ -237,17 +311,14 @@ var calculateBN = (function(){
 		  var S5f19 = getValue("S5f19");
 		  var S5f37 = getValue("S5F19")-getValue("S5F28"); 
 		  if(S5f19 > 0 && S5f37 <= 0) {
-			var m25_S5f3 = getValue("S5F3") * 0.25;
-			var m50_S5f28 = getValue("S5F28") * 0.5;
+			var m25_S5f3 = setFixed(getValue("S5F3") * 0.25);
+			var m50_S5f28 = setFixed(getValue("S5F28") * 0.5);
 			if(m25_S5f3 > m50_S5f28) {
 			  S5f37 = 0;
 			}
 		  }
 		setBNValue("S5F37",S5f37);
-		//-----------------------------------END---------------------------------------
-		//----------------------------S5F27 START------------------------------------------------
 		setBNValue("S5F27",carriedForwardLoss_S5F37);
-		//-----------------------------S5F27  END--------------------------------------------------
 		setBNValue("S5F29",getValue("S5F37")-getValue("S5F27"));
 		var S5f30 = 0;
 		var s9f10 = getValue("S9F10");
@@ -275,24 +346,24 @@ var calculateBN = (function(){
 			smallV = 0;
 		}else {
 			var S7f4 = getValue("S7F4");
-			var m10_s6f15 = s6f15* 0.1;
+			var m10_s6f15 = setFixed(s6f15* 0.1);
 			if(S7f4 > m10_s6f15)) {
 			  smallV = m10_s6f15;
 			}else {
 			  smallV = S7f4;
 			}
 		}
-		var m25_S7f3 =getValue("S7F3") * 0.25;
+		var m25_S7f3 =setFixed(getValue("S7F3") * 0.25);
 		var pvS7f3 = previousS7F3;
-		var p_m25_S7f3 = pvS7f3 * 0.25;
+		var p_m25_S7f3 = setFixed(pvS7f3 * 0.25);
 		setBNValue("S7F25",getValue("S7F2")+smallV+m25_S7f3+p_m25_S7f3);
 		setBNValue("S7F26",getMinValue(getValue("S7f26"),getValue("S6F7")));
 		setBNValue("S7F28",getValue("S7F20")+getValue("S7F21")+getValue("S7F22")+getValue("S7F25")+getValue("S7F26")+getValue("S7F39"));
 		var S7f19 = getValue("S7F19");
 		var S7f37 = getValue("S7F19") - getValue("S7F28");  
 		if(S7f19 > 0 && S7f37 <= 0) {
-			var m25_S7f3 = getValue("S7F3") * 0.25;
-			var m50_S7f28 = getValue("S7F28") * 0.5;
+			var m25_S7f3 = setFixed(getValue("S7F3") * 0.25);
+			var m50_S7f28 = setFixed(getValue("S7F28") * 0.5);
 			if(m25_S7f3 > m50_S7f28) {
 			  S7f37 = 0;
 			}
@@ -310,25 +381,49 @@ var calculateBN = (function(){
 		setBNValue("S7F36",getValue("S7F29")-(getValue("S7F30")+getValue("S7F31")+getValue("S7F32")+getValue("S7F33")+getValue("S7F34")+getValue("S7F35")));		
 	}
 	function schedule8(){
-		//no setBNValue("S8F3",);
+		  var asstFeild = "Cret00BPTCTRBNS8F14_";
+		  var dptnFeild = "Cret00BPTCTRBNS8F13_";		  
+		  var pvs14Map = "";
+		  var pvs13Map = "";
+		  var resultMap = resultMapSchedule8;
+		  if(resultMap != null) {
+			pvs14Map = resultMap.asstFeild;
+			pvs13Map = resultMap.dptnFeild;
+		  }
+		  var s8f2 = getValue("S8F2");
+		  var s8f3 = null;
+		  if(null!=s8f2 && null!=pvs14Map) {
+			s8f3 = pvs14Map.s8f2;
+		  }
+		  if(null==s8f3) {
+		  s8f3 = getValue("S8F3");
+		  }
+		setBNValue("S8F3",s8f3);
 		setBNValue("S8F6",getValue("S8F3")+getValue("S8F4")-getValue("S8F5"));
-		//no setBNValue("S8F7",);
-		setBNValue("S8F9",(getValue("S8F3")*getValue("S8F8"))/100);
-		setBNValue("S8F10",(getValue("S8F4")*getValue("S8F8"))/200);
-		setBNValue("S8F11",(getValue("S8F5")*getValue("S8F8"))/200);
+		  var s8f7 = null;
+		  if(null != s8f2 && null != pvs13Map) {
+			s8f7 = pvs13Map.s8f2;
+		  }
+		  if(null == s8f7) {
+			s8f7 = 0;
+		  }
+		setBNValue("S8F7",s8f7);
+		setBNValue("S8F9",setFixed((getValue("S8F3")*getValue("S8F8")))/100);
+		setBNValue("S8F10",setFixed((getValue("S8F4")*getValue("S8F8")))/200);
+		setBNValue("S8F11",setFixed((getValue("S8F5")*getValue("S8F8")))/200);
 		setBNValue("S8F12",getValue("S8F9")+getValue("S8F10")-getValue("S8F11"));
 		setBNValue("S8F13",getValue("S8F7")+getValue("S8F12"));
 		setBNValue("S8F14",getValue("S8F6")-getValue("S8F13"));
 		setBNValue("S8F15",getValue("S8F15")-getValue("S8F12"));
 	}
 	function schedule9(){
+		  var subTypeMap = resultMapSchedule8;
 		  var s9f2 = getValue("S9F2");
-		  //ajax Map subTypeMap = assResult.getSubTypeMap();
-		  String s8f5 = null;
+		  var s8f5 = null;
 		  if(null!=s9f2 && subTypeMap != null) {
-			//s8f5 = (String)subTypeMap.get(s9f2);
+			s8f5 = subTypeMap.s9f2;
 		  }
-		  if(null!=s8f5) {
+		  if(null==s8f5) {
 			s8f5 = 0;
 		  }
 		setBNValue("S9F5",s8f5);
@@ -339,7 +434,7 @@ var calculateBN = (function(){
 		  var s10f1 = 0;
 		  var s10f3 = 0;
 		  var s10f5 = 0;
-		  if("10_NAT_TRADE".equals(codeBus) || "2_NAT_TRADE".equals(codeBus)){
+		  if("10_NAT_TRADE".equals(codeBus_m) || "2_NAT_TRADE".equals(codeBus_m)){
 		  }else{
 			if("partnership".equals(taxpayerType)){
 			  s10f1 = getValue("S3F36")+getValue("S5F36")+getValue("S7F36");
@@ -351,68 +446,58 @@ var calculateBN = (function(){
 		setBNValue("S10F1",s10f1);
 		var myZero = 0;
 		if(s10f1 > myZero){
-		 setBNValue("S10F2",s10f1*0.15);
+		 setBNValue("S10F2",setFixed(s10f1*0.15));
 		}else{
 		  setBNValue("S10F2",myZero);
 		}
 		setBNValue("S10F3",s10f3);
-		//ajax String s10f4 = TaxValidation.calcTaxPable("BPT","comm",$Cret00BPTRetVerUid.needValue,s10f3,s10f5);
 		if(s10f4 > myZero){
 		 setBNValue("S10F4",s10f4);
 		}else{
 		 setBNValue("S10F4",myZero);
 		}
 		setBNValue("S10F5",s10f5);
-		//ajax String s10f6 = TaxValidation.calcTaxPable("BPT","indu",$Cret00BPTRetVerUid.needValue,s10f3,s10f5);
 		if(s10f6 > myZero)){
 		 setBNValue("S10F6",s10f6);
 		}else{
 		 setBNValue("S10F6",myZero);
 		}
-	}
-	function schedule10_part2(){
-		//ajax String codeBus=TaxValidation.getTaxpayerBus($Cret00BPTcreg01Tin.needValue,$Cret00BPTTaxpayerUid.needValue,"m");
-		  var s10f9 = 0;
-		  if("2_NAT_TRADE".equals(codeBus)){
+		var s10f9 = 0;
+		  if("2_NAT_TRADE".equals(codeBus_m)){
 			s10f9 = getValue("S3F36")+getValue("S5F36")+getValue("S7F36");
 		  }
 		setBNValue("S10F9",s10f9);
 		  if(getValue("S10F9") > 0){
-			setBNValue("S10F10",getValue("S10F9") * 0.3);
+			setBNValue("S10F10",setFixed(getValue("S10F9") * 0.3));
 		  }else{
 		  setBNValue("S10F10",0);
 		  }
-	}
-	function schedule10_part3(){
-		  //ajax String codeBus=TaxValidation.getTaxpayerBus($Cret00BPTcreg01Tin.needValue,$Cret00BPTTaxpayerUid.needValue,"s");
-		  var s10f11 = 0;
-		  if(null!=codeBus&&codeBus.indexOf("119_NAT_ACTIVITY")!=-1){
+		  		  var s10f11 = 0;
+		  if(null!=codeBus_s&&codeBus_s.indexOf("119_NAT_ACTIVITY")!=-1){
 			s10f11 = getValue("S3F36")+getValue("S5F36")+getValue("S7F36"); 
 		  }
 		    if(getValue("S10F11") > 0){
-			setBNValue("S10F12",getValue("S10F11") * 0.35);
+			setBNValue("S10F12",setFixed(getValue("S10F11") * 0.35));
 		  }else{
 			setBNValue("S10F12",0);
 		  }
-		  //ajax String codeBus=TaxValidation.getTaxpayerBus($Cret00BPTcreg01Tin.needValue,$Cret00BPTTaxpayerUid.needValue,"s");
 		  var s10f13 = String.valueOf(0);
-		  if(null!=codeBus&&(codeBus.indexOf("54_NAT_ACTIVITY")!=-1||codeBus.indexOf("105_NAT_ACTIVITY")!=-1)){
+		  if(null!=codeBus_s&&(codeBus_s.indexOf("54_NAT_ACTIVITY")!=-1||codeBus_s.indexOf("105_NAT_ACTIVITY")!=-1)){
 			s10f13 = getValue("S3F36")+getValue("S5F36")+getValue("S7F36");
 		  }
 		setBNValue("S10F13",s10f13);
 		   if(getValue("S10F13") > 0){
-		  setBNValue("S10F14",getValue("S10F13")*0.15);
+		  setBNValue("S10F14",setFixed(getValue("S10F13")*0.15));
 		  }else{
 		  setBNValue("S10F14",0);
 		  }
-		  //ajax String codeBus=TaxValidation.getTaxpayerBus($Cret00BPTcreg01Tin.needValue,$Cret00BPTTaxpayerUid.needValue,"m");
 		  var s10f15 = 0;
-		  if("12_NAT_TRADE".equals(codeBus)){  
+		  if("12_NAT_TRADE".equals(codeBus_m)){  
 			s10f15 = getValue("S3F36")+getValue("S5F36")+getValue("S7F36");
 		  }
 		  setBNValue("S10F15",s10f15);
 		    if(getValue("S10F15") > 0){
-		  setBNValue("S10F16",getValue("S10F15") * 0.15);
+		  setBNValue("S10F16",setFixed(getValue("S10F15") * 0.15));
 		  }else{
 		  setBNValue("S10F16", 0);
 		  }
@@ -423,43 +508,43 @@ var calculateBN = (function(){
 		  }
 		setBNValue("S10F19",s10f19);
 		  if(getValue("S10F19") > 0){
-		  setBNValue("S10F20",getValue("S10F19")*0.05");
+		  setBNValue("S10F20",setFixed(getValue("S10F19")*0.05));
 		  }else{
 		  setBNValue("S10F20",0);
 		  }
 		setBNValue("S10F7",getValue("S3F31")+getValue("S5F31")+getValue("S7F31"));
 		  if(getValue("S10F7") > 0){
-		 setBNValue("S10F8",getValue("S10F7") * 0.1);
+		 setBNValue("S10F8",setFixed(getValue("S10F7") * 0.1));
 		  }else{
 		  setBNValue("S10F8",0);
 		  }
 		setBNValue("S10F17",getValue("S9F8"));
 		  if(getValue("S10F17")> 0){
-		  setBNValue("S10F18",getValue("S10F17") * 0.15);
+		  setBNValue("S10F18",setFixed(getValue("S10F17") * 0.15));
 		  }else{
 		   setBNValue("S10F18",0);
 		  }
 		setBNValue("S10F21",getValue("S3F32")+getValue("S5F32")+getValue("S7F32"));
 		  if(getValue("S10F21") > 0){
-		  setBNValue("S10F22",getValue("S10F21") * 0.02);
+		  setBNValue("S10F22",setFixed(getValue("S10F21") * 0.02));
 		  }else{
 		  setBNValue("S10F22",0);
 		  }
 		setBNValue("S10F23",getValue("S3F33")+getValue("S5F33")+getValue("S7F33"));
 		  if(getValue("S10F23") > 0){
-		  setBNValue("S10F24",getValue("S10F23") * 0.02);
+		  setBNValue("S10F24",setFixed(getValue("S10F23") * 0.02));
 		  }else{
 		  setBNValue("S10F24",0);
 		  }
 		setBNValue("S10F25",getValue("S3F34")+getValue("S5F34")+getValue("S7F34"));
 		  if(getValue("S10F25") > 0){
-		  setBNValue("S10F26",getValue("S10F25") * 0.02);
+		  setBNValue("S10F26",setFixed(getValue("S10F25") * 0.02));
 		  }else{
 		  setBNValue("S10F26",0);
 		  }
 		setBNValue("S10F27",getValue("S3F35")+getValue("S5F35")+getValue("S7F35"));
 		  if(getValue("S10F27")> 0){
-		  setBNValue("S10F28",getValue("S10F27")*0.02);
+		  setBNValue("S10F28",setFixed(getValue("S10F27")*0.02));
 		  }else{
 		  setBNValue("S10F28",0);
 		  }
@@ -467,10 +552,9 @@ var calculateBN = (function(){
 		if(getValue("S10F29")<0){
 			setBNValue("S10F29",0);
 		}
-		  //ajax String val = TaxValidation.getMinusThePrepaidTax($Cret00BPTTaxpayerUid,$Cret00RetTaxperiod,$Cret00TaxtypeCode,$Cret00BPTVerTaxyear);
 		  var s10f30 = 0;
-		  if(null!=val){
-			s10f30 = val;
+		  if(null!=minusThePrepaidTax){
+			s10f30 = minusThePrepaidTax;
 		  }
 		setBNValue("S10F30",s10f30);
 		setBNValue("S10F31",getValue("S10F29")-getValue("S10F29"));
@@ -479,25 +563,25 @@ var calculateBN = (function(){
 		}
 		setBNValue("S10F32",getValue("S2F20")+getValue("S4F31")+getValue("S6F12"));
 		  if(getValue("S10F32") > 0){
-		  setBNValue("S10F33", getValue("S10F32")*0.07);
+		  setBNValue("S10F33", setFixed(getValue("S10F32")*0.07));
 		  }else{
 		  setBNValue("S10F33",0);
 		  }
 		setBNValue("S10F34",getValue("S4F14")+getValue("S4F20")+getValue("S6F3"));
 		  if(getValue("S10F34") > 0){
-		  setBNValue("S10F35",getValue("S10F34")* 0.07);
+		  setBNValue("S10F35",setFixed(getValue("S10F34")* 0.07));
 		  }else{
 		  setBNValue("S10F35",0);
 		  }
 		setBNValue("S10F36",getValue("S4F21")+getValue("S4F32")+getValue("S6F13"));
 		  if(getValue("S10F36") > 0){
-		  setBNValue("S10F37",getValue("10F36") * 0.07);
+		  setBNValue("S10F37",setFixed(getValue("10F36") * 0.07));
 		  }else{
 		  setBNValue("S10F37",0);
 		  }
 		setBNValue("S10F38",getValue("S4F22")+getValue("S4F33")+getValue("S6F14"));
 		  if(getValue("S10F38") > 0){
-		  setBNValue("S10F39",getValue("S10F38")*0.07");
+		  setBNValue("S10F39",setFixed(getValue("S10F38")*0.07));
 		  }else{
 		  setBNValue("S10F39",0);
 		  }
@@ -514,10 +598,19 @@ var calculateBN = (function(){
 	return function schedule(){
 			schedule1();
 			schedule2();
+			schedule3();
+			schedule4();
+			schedule5();
+			schedule6();
+			schedule7();
+			schedule8();
+			schedule9();
+			schedule10();
+			schedule11();
 	};
 })();
 
-
+/*
 var disableCalculatedInput = (function(){
 	var options = {};
 	options.prefix = "Cret00RTRTC";
@@ -526,9 +619,8 @@ var disableCalculatedInput = (function(){
 	}
 	return function disableCalculatedInput(){
 		disableInput("S1F3");
-		disableInput("S1F9");
-		disableInput("S1F10");
-		disableInput("S1F11");
+		
 	};
 })();
 
+*/
